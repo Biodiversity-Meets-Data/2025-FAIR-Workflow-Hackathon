@@ -1,0 +1,39 @@
+kind: Workflow
+spec:
+  arguments:
+    parameters:
+    - name: species
+      description: Species used for distribution modeling
+      value: Rhinolopthus ferrumequinum
+
+  artifactGC:
+    forceFinalizerRemoval: true
+  entrypoint: workflow
+  podGC:
+    strategy: OnWorkflowSuccess
+  templates:
+  - name: workflow
+    steps:
+    - - name: sdm
+        template: sdm
+        arguments:
+          parameters:
+          - name: species
+            value: '{{ workflow.parameters.species }}'
+  - name: sdm
+    inputs:
+      parameters:
+      - name: species
+    container:
+      name: sdm-container
+      image: taimurhk/vre-r-base:latest
+      workingDir: /app
+      args:
+        - '{{ inputs.parameters.species }}'
+    outputs:
+      artifacts:
+      - archive:
+          none: {}
+        name: exports
+        path: /app/output # TODO actual output folder name?
+
